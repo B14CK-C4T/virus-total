@@ -47,10 +47,19 @@ def read_yaml(): #read yaml config to get api key
     except yaml.YAMLError as e:
         print(e)
     except FileNotFoundError:
-        print("[!] Error: The config.yaml file was not found.")
+        print("[!] Error: The config.yaml file was not found.\n[*] Use: -init to setup config file")
+        exit(0)
+
 
 def req_data(domain, save=None): #fetching data from virus total
     read_yaml()
+
+    if not api_key:
+        print("[!] No api key found!\n[*] Use: -init to setup config file")
+        exit(0)
+    else:
+        pass
+
     headers = {"Accept": "application/json"}
     url = f'https://www.virustotal.com/vtapi/v2/domain/report?apikey={api_key[0]}&domain={domain}'
     

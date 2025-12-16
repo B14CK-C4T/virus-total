@@ -10,6 +10,11 @@ test_env_path = ".env"
 config_file = "config.yaml"
 api_key = []
 
+detected_urls = []
+ip_addresses = []
+subdomains = []
+undetected_urls = []
+
 def init():
     print("[!] creating config file")
 
@@ -53,19 +58,74 @@ def read_yaml(): #read yaml config to get api key
 
 def req_data(domain, save=None): #fetching data from virus total
     read_yaml()
-
-    if not api_key:
+    #check existence of api key
+    if not api_key: 
         print("[!] No api key found!\n[*] Use: -init to setup config file")
         exit(0)
     else:
         pass
-
+    #making request
     headers = {"Accept": "application/json"}
     url = f'https://www.virustotal.com/vtapi/v2/domain/report?apikey={api_key[0]}&domain={domain}'
     
-    r = requests.get(url, headers=headers, timeout=10)
-    data = r.json()
-    print(json.dumps(data, indent=4))
+    r = requests.get(url, headers=headers, timeout=10) #fetching response
+    data = r.json() #response in json
+    #filtering data
+    det_urls = [
+        {"url": u["url"]}
+        for u in data.get("detected_urls", [])
+    ]
+
+    res = [
+        {"ip": i["ip_address"]}
+        for i in data.get("resolutions", [])
+    ]
+
+    subs = data.get("subdomains", [])
+
+    undet_urls = data.get("undetected_urls", [])
+    urls = [item[0] for item in undet_urls]
+
+    #stdout
+    print("[+] Detected Urls: \n")
+    for i in det_urls:
+        print(f"{i.get("url")}")
+        if save:
+            detected_urls.append(i.get("url"))
+
+    print("\n[+] IP Addresses:\n")
+    for i in res:
+        print(f"{i.get("ip")}")
+        if save:
+            ip_addresses.append(i.get("ip"))
+
+    print("\n[+] Subdomains:\n")
+    for i in subs:
+        print(i)
+        if save:
+            subdomains.append(i)
+
+    print("\n[+] Undetected Urls:\n")
+    for url in urls:
+        print(url)
+        if save:
+            undetected_urls.append(url)
+
+
+def save_file(file_name):
+    with open(f"{file_name}", 'w') as file:
+        file.write("[+] Detected Urls: \n")
+        for i in detected_urls:
+            file.writelines(i + "\n")
+        file.write("[+] IP Addresses:\n")
+        for i in ip_addresses:
+            file.writelines(i + "\n")
+        file.write("[+] Subdomains:\n")
+        for i in subdomains:
+            file.writelines(i + "\n")
+        file.write("[+] Undetected Urls:\n")
+        for i in undetected_urls:
+            file.writelines(i + "\n")
 
 def main():
     parser = argparse.ArgumentParser(prog="virusTotal", description="it fetch report data from virustotal")
@@ -74,10 +134,17 @@ def main():
     parser.add_argument('-o', help="store output into a file", type=str, metavar="file name")
     args = parser.parse_args()
 
-    domain = args.d
-    if args.init:
+    domain = args.d #domain name
+
+    save = args.o #save file name
+
+    if args.init: 
         init()
-    req_data(domain)
+    
+    req_data(domain,save) #main
+
+    if save: #save file if -o chosen
+        save_file(save)
 
 if __name__ == '__main__':
     main()

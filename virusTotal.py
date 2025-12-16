@@ -5,8 +5,8 @@ import os
 import json
 import yaml
 
-#config_path = "$HOME/.config/virustotal"
-test_env_path = ".env"
+config_path = "$HOME/.config/virustotal" #default config path
+#config_path = ".env" #test environment path
 config_file = "config.yaml"
 api_key = []
 
@@ -18,24 +18,24 @@ undetected_urls = []
 def init():
     print("[!] creating config file")
 
-    if os.path.isdir(test_env_path):
-        print(f"config path: {test_env_path} exist")
+    if os.path.isdir(config_path):
+        print(f"config path: {config_path} exist")
     else:
-        os.makedirs(test_env_path)
+        os.makedirs(config_path)
         
     try:
-        with open(f"{test_env_path}/{config_file}", 'w') as file:
+        with open(f"{config_path}/{config_file}", 'w') as file:
             file.writelines('api-key:')
             
     except FileExistsError as e:
         print(e)
 
-    print(f"[+] config file created on {test_env_path}/{config_file}")
+    print(f"[+] config file created on {config_path}/{config_file}")
 
     api_key = input("[!] Enter your virus total API Key: ")
 
     try:
-        with open(f"{test_env_path}/{config_file}", 'w') as file:
+        with open(f"{config_path}/{config_file}", 'w') as file:
             file.writelines(f"api-key: {api_key}")
 
         print("[*] Done!")
@@ -46,7 +46,7 @@ def init():
 
 def read_yaml(): #read yaml config to get api key
     try:
-        with open(f"{test_env_path}/{config_file}", 'r') as file:
+        with open(f"{config_path}/{config_file}", 'r') as file:
             data = yaml.safe_load(file)
             api_key.append(data.get('api-key'))
     except yaml.YAMLError as e:

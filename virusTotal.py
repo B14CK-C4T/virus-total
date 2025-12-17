@@ -5,6 +5,11 @@ import os
 import json
 import yaml
 
+RED = "\033[31m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+RESET = "\033[0m"
+
 config_path = "$HOME/.config/virustotal" #default config path
 #config_path = ".env" #test environment path
 config_file = "config.yaml"
@@ -16,10 +21,10 @@ subdomains = []
 undetected_urls = []
 
 def init():
-    print("[!] creating config file")
+    print(f"{GREEN}[!] creating config file{RESET}")
 
     if os.path.isdir(config_path):
-        print(f"config path: {config_path} exist")
+        print(f"{GREEN}[*]config path: {config_path} exist {RESET}")
     else:
         os.makedirs(config_path)
         
@@ -30,19 +35,19 @@ def init():
     except FileExistsError as e:
         print(e)
 
-    print(f"[+] config file created on {config_path}/{config_file}")
+    print(f"{GREEN}[+] config file created on {config_path}/{config_file} {RESET}")
 
-    api_key = input("[!] Enter your virus total API Key: ")
+    api_key = input(f"{YELLOW}[!] Enter your virus total API Key: {RESET}")
 
     try:
         with open(f"{config_path}/{config_file}", 'w') as file:
             file.writelines(f"api-key: {api_key}")
 
-        print("[*] Done!")
+        print(f"{GREEN}[*] Done! {RESET}")
         exit(0)
 
     except FileNotFoundError as e:
-        print(e)
+        print(f"{RED}{e}{RESET}")
 
 def read_yaml(): #read yaml config to get api key
     try:
@@ -52,7 +57,7 @@ def read_yaml(): #read yaml config to get api key
     except yaml.YAMLError as e:
         print(e)
     except FileNotFoundError:
-        print("[!] Error: The config.yaml file was not found.\n[*] Use: -init to setup config file")
+        print(f"{RED}[!] Error: The config.yaml file was not found.\n[*] Use: -init to setup config file {RESET}")
         exit(0)
 
 
@@ -60,7 +65,7 @@ def req_data(domain, save=None): #fetching data from virus total
     read_yaml()
     #check existence of api key
     if not api_key: 
-        print("[!] No api key found!\n[*] Use: -init to setup config file")
+        print(f"{RED}[!] No api key found!\n[*] Use: -init to setup config file{RESET}")
         exit(0)
     else:
         pass
@@ -87,25 +92,25 @@ def req_data(domain, save=None): #fetching data from virus total
     urls = [item[0] for item in undet_urls]
 
     #stdout
-    print("[+] Detected Urls: \n")
+    print(f"{GREEN}[+] Detected Urls: \n{RESET}")
     for i in det_urls:
         print(f"{i.get("url")}")
         if save:
             detected_urls.append(i.get("url"))
 
-    print("\n[+] IP Addresses:\n")
+    print(f"{GREEN}\n[+] IP Addresses:\n{RESET}")
     for i in res:
         print(f"{i.get("ip")}")
         if save:
             ip_addresses.append(i.get("ip"))
 
-    print("\n[+] Subdomains:\n")
+    print(f"{GREEN}\n[+] Subdomains:\n{RESET}")
     for i in subs:
         print(i)
         if save:
             subdomains.append(i)
 
-    print("\n[+] Undetected Urls:\n")
+    print(f"{GREEN}\n[+] Undetected Urls:\n{RESET}")
     for url in urls:
         print(url)
         if save:
